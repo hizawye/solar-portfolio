@@ -6,12 +6,13 @@ import { BIO_DATA, PORTFOLIO_DATA } from '../constants';
 import { X, ArrowLeft, ArrowRight } from 'lucide-react';
 
 interface UIProps {
-  focusedPlanetIndex: number | null;
-  selectedSatellite: SatelliteData | null;
+  selectedObject: { type: 'planet', index: number } | { type: 'satellite', data: SatelliteData } | { type: 'sun' } | null;
   isBioOpen: boolean;
   onCloseModal: () => void;
   onNavigate: (direction: 'next' | 'prev') => void;
   onSatelliteSelect: (satellite: SatelliteData) => void;
+  onPlanetClick: (index: number) => void;
+  onSunClick: () => void;
 }
 
 const modalVariants = {
@@ -26,8 +27,9 @@ const backdropVariants = {
   exit: { opacity: 0 },
 };
 
-export function UI({ focusedPlanetIndex, selectedSatellite, isBioOpen, onCloseModal, onNavigate, onSatelliteSelect }: UIProps) {
-  const currentPlanet = focusedPlanetIndex !== null ? PORTFOLIO_DATA[focusedPlanetIndex] : null;
+export function UI({ selectedObject, isBioOpen, onCloseModal, onNavigate, onSatelliteSelect, onPlanetClick, onSunClick }: UIProps) {
+  const currentPlanet = selectedObject?.type === 'planet' ? PORTFOLIO_DATA[selectedObject.index] : null;
+  const selectedSatellite = selectedObject?.type === 'satellite' ? selectedObject.data : null;
 
   const ModalContent = () => {
     if (isBioOpen) {
@@ -68,26 +70,33 @@ export function UI({ focusedPlanetIndex, selectedSatellite, isBioOpen, onCloseMo
       <div className="absolute top-4 left-4 text-white max-w-xs pointer-events-none">
         <AnimatePresence>
             <motion.h1
-                key={currentPlanet ? currentPlanet.id : 'universe'}
+                key={selectedObject ? (selectedObject.type === 'planet' ? selectedObject.index : selectedObject.type) : 'universe'}
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.3 }}
-                className="text-xl font-bold tracking-widest uppercase mb-2"
+                className="text-xl font-bold tracking-widest uppercase mb-2 cursor-pointer pointer-events-auto"
+                onClick={() => {
+                    if (selectedObject?.type === 'planet') {
+                        onPlanetClick(selectedObject.index);
+                    } else if (selectedObject?.type === 'sun') {
+                        onSunClick();
+                    }
+                }}
             >
-                {currentPlanet ? currentPlanet.name : "Portfolio Universe"}
+                {selectedObject?.type === 'planet' ? PORTFOLIO_DATA[selectedObject.index].name : (selectedObject?.type === 'sun' ? BIO_DATA.name : "Portfolio Universe")}
             </motion.h1>
         </AnimatePresence>
         
         <AnimatePresence>
-            {currentPlanet && (
+            {selectedObject?.type === 'planet' && (
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1, transition: { staggerChildren: 0.07, delayChildren: 0.2 } }}
                     exit={{ opacity: 0 }}
                     className="flex flex-col items-start pl-2 border-l-2 border-white/20 pointer-events-auto"
                 >
-                    {currentPlanet.satellites.map(satellite => (
+                    {PORTFOLIO_DATA[selectedObject.index].satellites.map(satellite => (
                         <motion.button
                             key={satellite.id}
                             initial={{ opacity: 0, x: -10 }}

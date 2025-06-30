@@ -9,14 +9,15 @@ import { PORTFOLIO_DATA } from '../constants';
 import { SatelliteData } from '../types';
 
 interface SceneProps {
-  focusedPlanetIndex: number | null;
+  selectedObject: { type: 'planet', index: number } | { type: 'satellite', data: SatelliteData } | { type: 'sun' } | null;
   onPlanetClick: (index: number) => void;
   onSunClick: () => void;
   onSatelliteClick: (satellite: SatelliteData) => void;
   showIntro: boolean;
+  onUniverseClick: () => void;
 }
 
-export function Scene({ focusedPlanetIndex, onPlanetClick, onSunClick, onSatelliteClick, showIntro }: SceneProps) {
+export function Scene({ selectedObject, onPlanetClick, onSunClick, onSatelliteClick, showIntro, onUniverseClick }: SceneProps) {
   const { camera } = useThree();
   const controlsRef = useRef<any>();
   const [targetPosition, setTargetPosition] = useState(new Vector3(0, 20, 85));
@@ -33,9 +34,9 @@ export function Scene({ focusedPlanetIndex, onPlanetClick, onSunClick, onSatelli
       return;
     }
 
-    if (focusedPlanetIndex !== null) {
-      const planet = PORTFOLIO_DATA[focusedPlanetIndex];
-      const planetPos = planetPositions[focusedPlanetIndex];
+    if (selectedObject?.type === 'planet') {
+      const planet = PORTFOLIO_DATA[selectedObject.index];
+      const planetPos = planetPositions[selectedObject.index];
       const distance = planet.size * 5;
       const cameraPos = new Vector3(planetPos.x, planetPos.y + planet.size * 1.5, planetPos.z + distance);
       setTargetPosition(cameraPos);
@@ -45,7 +46,7 @@ export function Scene({ focusedPlanetIndex, onPlanetClick, onSunClick, onSatelli
       setTargetPosition(new Vector3(0, 5, 50));
       setTargetLookAt(new Vector3(0, 0, 0));
     }
-  }, [focusedPlanetIndex, showIntro, planetPositions]);
+  }, [selectedObject, showIntro, planetPositions]);
 
   useFrame(() => {
     if (isNavigating) {
@@ -71,6 +72,10 @@ export function Scene({ focusedPlanetIndex, onPlanetClick, onSunClick, onSatelli
 
   return (
     <>
+      <mesh onClick={onUniverseClick} position={[0, 0, -1000]}>
+        <planeGeometry args={[2000, 2000]} />
+        <meshBasicMaterial transparent opacity={0} />
+      </mesh>
       <ambientLight intensity={0.2} />
       <pointLight position={[0, 0, 0]} intensity={1.5} color="#FFDDBB" />
       <Stars radius={300} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
@@ -81,7 +86,7 @@ export function Scene({ focusedPlanetIndex, onPlanetClick, onSunClick, onSatelli
         <Planet
           key={planetData.id}
           planetData={planetData}
-          isFocused={focusedPlanetIndex === index}
+          isFocused={selectedObject?.type === 'planet' && selectedObject.index === index}
           onPlanetClick={() => onPlanetClick(index)}
           onSatelliteClick={onSatelliteClick}
           updatePosition={(pos) => planetPositions[index].copy(pos)}
