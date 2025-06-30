@@ -34,9 +34,12 @@ export function Planet({ planetData, isFocused, onPlanetClick, onSatelliteClick,
 
   return (
     <group ref={groupRef}>
+      <mesh onClick={onPlanetClick}>
+        <sphereGeometry args={[planetData.size * 1.5, 32, 32]} />
+        <meshBasicMaterial transparent opacity={0} />
+      </mesh>
       <mesh
         ref={meshRef}
-        onClick={onPlanetClick}
       >
         <sphereGeometry args={[planetData.size, 32, 32]} />
         <meshStandardMaterial
@@ -46,7 +49,7 @@ export function Planet({ planetData, isFocused, onPlanetClick, onSatelliteClick,
           toneMapped={false}
         />
         {!isFocused && (
-          <Html position={[0, planetData.size + 0.5, 0]} center onClick={onPlanetClick}>
+          <Html position={[0, planetData.size + 1.0, 0]} center distanceFactor={10} onClick={onPlanetClick}>
             <div className="bg-black/50 text-white px-3 py-1 rounded-md text-sm whitespace-nowrap select-none">
               {planetData.name}
             </div>

@@ -37,18 +37,24 @@ export function Satellite({ satelliteData, planetSize, index, total, onClick }: 
   });
 
   return (
-    <a.mesh
+    <a.group
       ref={meshRef}
       onClick={onClick}
       scale={springProps.scale}
     >
-      <sphereGeometry args={[0.3, 16, 16]} />
-      <meshStandardMaterial color={'#aaaaaa'} emissive={'#333333'} emissiveIntensity={0.2} />
-      <Html position={[0, 0.5, 0]} center>
+      <mesh>
+        <sphereGeometry args={[0.8, 16, 16]} />
+        <meshBasicMaterial transparent opacity={0} />
+      </mesh>
+      <mesh>
+        <sphereGeometry args={[0.3, 16, 16]} />
+        <meshStandardMaterial color={'#aaaaaa'} emissive={'#333333'} emissiveIntensity={0.2} />
+      </mesh>
+      <Html position={[0, 0.8, 0]} center distanceFactor={10} onClick={onClick}>
         <div className="bg-black/50 text-white px-2 py-1 rounded-md text-xs whitespace-nowrap select-none">
           {satelliteData.name}
         </div>
       </Html>
-    </a.mesh>
+    </a.group>
   );
 }
